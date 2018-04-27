@@ -4,6 +4,14 @@ defmodule TusClient.Utils do
   @doc false
   def get_header(headers, header_name) do
     headers
+    |> Enum.map(fn {header, value} ->
+      {String.downcase(header), value}
+    end)
+    |> get_header_impl(String.downcase(header_name))
+  end
+
+  def get_header_impl(headers, header_name) do
+    headers
     |> Enum.filter(fn
       {^header_name, _value} ->
         true
