@@ -70,7 +70,10 @@ defmodule TusClient.Post do
   defp add_metadata(headers, opts) do
     case Keyword.get(opts, :metadata) do
       md when is_map(md) ->
-        case Enum.empty?(md) do
+        md
+        |> cleanup_metadata()
+        |> Enum.empty?()
+        |> case do
           true ->
             headers
 
@@ -83,7 +86,7 @@ defmodule TusClient.Post do
     end
   end
 
-  defp encode_metadata(md) do
+  defp cleanup_metadata(md) do
     md
     |> Enum.map(fn {k, v} ->
       {"#{k}", v}
@@ -98,6 +101,11 @@ defmodule TusClient.Post do
           false
       end
     end)
+    |> Map.new()
+  end
+
+  defp encode_metadata(md) do
+    md
     |> Enum.map(fn {k, v} ->
       value = Base.encode64(v)
       "#{k} #{value}"

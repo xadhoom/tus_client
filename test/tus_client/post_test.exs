@@ -47,6 +47,42 @@ defmodule TusClient.PostTest do
              )
   end
 
+  test "request/1 invalid key in metadata", %{bypass: bypass, tmp_file: path} do
+    Bypass.expect_once(bypass, "POST", "/files", fn conn ->
+      conn
+      |> assert_upload_len()
+      |> assert_version()
+      |> refute_metadata()
+      |> put_resp_header("location", endpoint_url(bypass.port) <> "/foofile")
+      |> resp(201, "")
+    end)
+
+    assert {:ok, %{location: endpoint_url(bypass.port) <> "/foofile"}} ==
+             Post.request(
+               endpoint_url(bypass.port),
+               path,
+               metadata: %{"foo!" => "bar"}
+             )
+  end
+
+  test "request/1 with empty metadata", %{bypass: bypass, tmp_file: path} do
+    Bypass.expect_once(bypass, "POST", "/files", fn conn ->
+      conn
+      |> assert_upload_len()
+      |> assert_version()
+      |> refute_metadata()
+      |> put_resp_header("location", endpoint_url(bypass.port) <> "/foofile")
+      |> resp(201, "")
+    end)
+
+    assert {:ok, %{location: endpoint_url(bypass.port) <> "/foofile"}} ==
+             Post.request(
+               endpoint_url(bypass.port),
+               path,
+               metadata: %{}
+             )
+  end
+
   test "request/1 missing location", %{bypass: bypass, tmp_file: path} do
     Bypass.expect_once(bypass, "POST", "/files", fn conn ->
       conn
@@ -75,6 +111,19 @@ defmodule TusClient.PostTest do
              )
   end
 
+  test "request/1 unexpected status code", %{bypass: bypass, tmp_file: path} do
+    Bypass.expect_once(bypass, "POST", "/files", fn conn ->
+      conn
+      |> resp(500, "")
+    end)
+
+    assert {:error, :generic} == Post.request(endpoint_url(bypass.port), path)
+  end
+
+  test "request/1 transport error", %{bypass: _bypass, tmp_file: path} do
+    assert {:error, :transport} == Post.request(endpoint_url(0), path)
+  end
+
   defp endpoint_url(port), do: "http://localhost:#{port}/files"
 
   defp assert_upload_len(conn) do
@@ -95,6 +144,11 @@ defmodule TusClient.PostTest do
   defp assert_metadata(conn) do
     assert [md] = get_req_header(conn, "upload-metadata")
     assert valid_metadata?(md)
+    conn
+  end
+
+  defp refute_metadata(conn) do
+    assert [] = get_req_header(conn, "upload-metadata")
     conn
   end
 
