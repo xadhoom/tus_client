@@ -47,6 +47,24 @@ defmodule TusClient.PostTest do
              )
   end
 
+  test "request/1 with multiple metadata", %{bypass: bypass, tmp_file: path} do
+    Bypass.expect_once(bypass, "POST", "/files", fn conn ->
+      conn
+      |> assert_upload_len()
+      |> assert_version()
+      |> assert_metadata()
+      |> put_resp_header("location", endpoint_url(bypass.port) <> "/foofile")
+      |> resp(201, "")
+    end)
+
+    assert {:ok, %{location: endpoint_url(bypass.port) <> "/foofile"}} ==
+             Post.request(
+               endpoint_url(bypass.port),
+               path,
+               metadata: %{"foo" => "bar", "bar" => 12, baz: false}
+             )
+  end
+
   test "request/1 invalid key in metadata", %{bypass: bypass, tmp_file: path} do
     Bypass.expect_once(bypass, "POST", "/files", fn conn ->
       conn

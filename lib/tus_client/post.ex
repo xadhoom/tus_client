@@ -107,7 +107,7 @@ defmodule TusClient.Post do
   defp encode_metadata(md) do
     md
     |> Enum.map(fn {k, v} ->
-      value = Base.encode64(v)
+      value = v |> to_string |> Base.encode64()
       "#{k} #{value}"
     end)
     |> Enum.join(",")
