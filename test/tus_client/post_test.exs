@@ -29,6 +29,24 @@ defmodule TusClient.PostTest do
              Post.request(endpoint_url(bypass.port), path)
   end
 
+  test "request/1 with metadata", %{bypass: bypass, tmp_file: path} do
+    Bypass.expect_once(bypass, "POST", "/files", fn conn ->
+      conn
+      |> assert_upload_len()
+      |> assert_version()
+      |> assert_metadata()
+      |> put_resp_header("location", endpoint_url(bypass.port) <> "/foofile")
+      |> resp(201, "")
+    end)
+
+    assert {:ok, %{location: endpoint_url(bypass.port) <> "/foofile"}} ==
+             Post.request(
+               endpoint_url(bypass.port),
+               path,
+               metadata: %{"foo" => "bar"}
+             )
+  end
+
   test "request/1 missing location", %{bypass: bypass, tmp_file: path} do
     Bypass.expect_once(bypass, "POST", "/files", fn conn ->
       conn
@@ -74,6 +92,12 @@ defmodule TusClient.PostTest do
     conn
   end
 
+  defp assert_metadata(conn) do
+    assert [md] = get_req_header(conn, "upload-metadata")
+    assert valid_metadata?(md)
+    conn
+  end
+
   defp random_file do
     path = "/tmp/#{random_file_name()}"
     File.write!(path, "yadda")
@@ -86,5 +110,36 @@ defmodule TusClient.PostTest do
       case: :lower,
       padding: false
     )
+  end
+
+  defp valid_metadata?(metadata) when is_binary(metadata) do
+    split =
+      metadata
+      |> String.trim()
+      |> String.split(",")
+      |> Enum.map(fn kv -> kv |> String.trim() end)
+
+    split
+    |> Enum.all?(fn kv ->
+      kv =~ ~r/^[a-z|A-Z|0-9]+ [a-z|A-Z|0-9|=|\/|\+]+$/
+    end)
+    |> case do
+      false ->
+        false
+
+      true ->
+        split
+        |> Enum.map(fn kv ->
+          kv
+          |> String.split(" ")
+          |> List.to_tuple()
+        end)
+        |> Enum.all?(fn {_k, v} ->
+          case Base.decode64(v) do
+            {:ok, _} -> true
+            _ -> false
+          end
+        end)
+    end
   end
 end

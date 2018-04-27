@@ -7,9 +7,11 @@ defmodule TusClient do
   require Logger
 
   @spec upload(binary(), binary(), list({binary, binary})) :: {:ok, binary}
-  def upload(base_url, path, _headers \\ []) do
+  def upload(base_url, path, opts \\ []) do
+    md = Keyword.get(opts, :metadata)
+
     with {:ok, _} <- Options.request(url: base_url),
-         {:ok, %{location: loc}} <- Post.request(base_url, path) do
+         {:ok, %{location: loc}} <- Post.request(base_url, path, metadata: md) do
       do_patch(loc, path)
     end
   end
