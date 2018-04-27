@@ -4,7 +4,7 @@ defmodule TusClient.Patch do
 
   require Logger
 
-  def request(location: url, offset: offset, path: path) do
+  def request(url, offset, path) do
     path
     |> seek(offset)
     |> do_read()

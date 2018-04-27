@@ -36,9 +36,9 @@ defmodule TusClient.PatchTest do
 
     assert {:ok, String.length(data)} ==
              Patch.request(
-               location: endpoint_url(bypass.port, "#{filen}"),
-               offset: 0,
-               path: path
+               endpoint_url(bypass.port, "#{filen}"),
+               0,
+               path
              )
   end
 
@@ -63,9 +63,9 @@ defmodule TusClient.PatchTest do
 
     assert {:ok, String.length(data)} ==
              Patch.request(
-               location: endpoint_url(bypass.port, "#{filen}"),
-               offset: 13,
-               path: path
+               endpoint_url(bypass.port, "#{filen}"),
+               13,
+               path
              )
   end
 
@@ -81,9 +81,9 @@ defmodule TusClient.PatchTest do
 
     assert {:error, :generic} ==
              Patch.request(
-               location: endpoint_url(bypass.port, "#{filen}"),
-               offset: 0,
-               path: path
+               endpoint_url(bypass.port, "#{filen}"),
+               0,
+               path
              )
   end
 
@@ -92,9 +92,9 @@ defmodule TusClient.PatchTest do
 
     assert {:error, :eof} =
              Patch.request(
-               location: endpoint_url(bypass.port, "#{filen}"),
-               offset: 13,
-               path: path
+               endpoint_url(bypass.port, "#{filen}"),
+               13,
+               path
              )
   end
 
@@ -103,9 +103,9 @@ defmodule TusClient.PatchTest do
 
     assert {:error, :file_error} =
              Patch.request(
-               location: endpoint_url(bypass.port, "#{filen}"),
-               offset: 13,
-               path: "foobar"
+               endpoint_url(bypass.port, "#{filen}"),
+               13,
+               "foobar"
              )
   end
 
@@ -114,9 +114,9 @@ defmodule TusClient.PatchTest do
 
     assert {:error, :transport} =
              Patch.request(
-               location: endpoint_url(0, "#{filen}"),
-               offset: 0,
-               path: path
+               endpoint_url(0, "#{filen}"),
+               0,
+               path
              )
   end
 
