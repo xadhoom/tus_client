@@ -4,7 +4,7 @@ defmodule TusClient.Post do
 
   require Logger
 
-  def request(url: url, path: path) do
+  def request(url, path, opts \\ []) do
     path
     |> get_filesize()
     |> do_request(url)

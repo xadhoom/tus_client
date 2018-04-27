@@ -9,7 +9,7 @@ defmodule TusClient do
   @spec upload(binary(), binary(), list({binary, binary})) :: {:ok, binary}
   def upload(base_url, path, _headers \\ []) do
     with {:ok, _} <- Options.request(url: base_url),
-         {:ok, %{location: loc}} <- Post.request(url: base_url, path: path) do
+         {:ok, %{location: loc}} <- Post.request(base_url, path) do
       do_patch(loc, path)
     end
   end

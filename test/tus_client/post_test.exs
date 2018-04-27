@@ -26,7 +26,7 @@ defmodule TusClient.PostTest do
     end)
 
     assert {:ok, %{location: endpoint_url(bypass.port) <> "/foofile"}} ==
-             Post.request(url: endpoint_url(bypass.port), path: path)
+             Post.request(endpoint_url(bypass.port), path)
   end
 
   test "request/1 missing location", %{bypass: bypass, tmp_file: path} do
@@ -36,8 +36,7 @@ defmodule TusClient.PostTest do
       |> resp(201, "")
     end)
 
-    assert {:error, :location} ==
-             Post.request(url: endpoint_url(bypass.port), path: path)
+    assert {:error, :location} == Post.request(endpoint_url(bypass.port), path)
   end
 
   test "request/1 too large", %{bypass: bypass, tmp_file: path} do
@@ -47,15 +46,14 @@ defmodule TusClient.PostTest do
       |> resp(413, "")
     end)
 
-    assert {:error, :too_large} ==
-             Post.request(url: endpoint_url(bypass.port), path: path)
+    assert {:error, :too_large} == Post.request(endpoint_url(bypass.port), path)
   end
 
   test "request/1 missing file", %{bypass: bypass} do
     assert {:error, :file_error} ==
              Post.request(
-               url: endpoint_url(bypass.port),
-               path: "/tmp/yaddayadda"
+               endpoint_url(bypass.port),
+               "/tmp/yaddayadda"
              )
   end
 
