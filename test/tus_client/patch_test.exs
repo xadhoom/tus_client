@@ -27,7 +27,7 @@ defmodule TusClient.PatchTest do
       {:ok, body, conn} = read_body(conn)
       assert data == body
 
-      len = String.length(data) |> to_string()
+      len = data |> String.length() |> to_string()
 
       conn
       |> put_resp_header("upload-offset", len)
@@ -54,7 +54,7 @@ defmodule TusClient.PatchTest do
       # we're sending only last 3 chars, from a 16 len
       assert body == "moh"
 
-      len = String.length(data) |> to_string()
+      len = data |> String.length() |> to_string()
 
       conn
       |> put_resp_header("upload-offset", len)
