@@ -8,18 +8,24 @@ defmodule TusClient.Patch do
     path
     |> seek(offset)
     |> do_read()
-    |> do_request(url)
+    |> do_request(url, offset)
   end
 
-  defp do_request({:ok, data}, url) do
-    hdrs = [{"content-length", IO.iodata_length(data)}]
+  defp do_request({:ok, data}, url, offset) do
+    hdrs =
+      [
+        {"content-length", IO.iodata_length(data)},
+        {"upload-offset", to_string(offset)}
+      ]
+      |> Utils.add_version_hdr()
+      |> Utils.add_tus_content_type()
 
     url
     |> HTTPoison.patch(data, hdrs)
     |> parse()
   end
 
-  defp do_request({:error, _} = err, _url), do: err
+  defp do_request({:error, _} = err, _url, _offset), do: err
 
   defp parse({:ok, %{status_code: 204, headers: headers}}) do
     case Utils.get_header(headers, "upload-offset") do

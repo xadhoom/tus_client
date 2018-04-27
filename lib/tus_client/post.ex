@@ -11,7 +11,9 @@ defmodule TusClient.Post do
   end
 
   defp do_request({:ok, size}, url) do
-    hdrs = [{"upload-length", to_string(size)}]
+    hdrs =
+      [{"upload-length", to_string(size)}]
+      |> Utils.add_version_hdr()
 
     url
     |> HTTPoison.post("", hdrs)

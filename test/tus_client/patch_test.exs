@@ -22,6 +22,8 @@ defmodule TusClient.PatchTest do
     :ok = File.write!(path, data)
 
     Bypass.expect_once(bypass, "PATCH", "/files/#{filen}", fn conn ->
+      protocol_assertions(conn)
+
       {:ok, body, conn} = read_body(conn)
       assert data == body
 
@@ -46,6 +48,8 @@ defmodule TusClient.PatchTest do
     :ok = File.write!(path, data)
 
     Bypass.expect_once(bypass, "PATCH", "/files/#{filen}", fn conn ->
+      protocol_assertions(conn)
+
       {:ok, body, conn} = read_body(conn)
       # we're sending only last 3 chars, from a 16 len
       assert body == "moh"
@@ -69,6 +73,8 @@ defmodule TusClient.PatchTest do
     filen = random_file_name()
 
     Bypass.expect_once(bypass, "PATCH", "/files/#{filen}", fn conn ->
+      protocol_assertions(conn)
+
       conn
       |> resp(412, "")
     end)
@@ -115,6 +121,32 @@ defmodule TusClient.PatchTest do
   end
 
   defp endpoint_url(port, fname), do: "http://localhost:#{port}/files/#{fname}"
+
+  defp protocol_assertions(conn) do
+    conn
+    |> assert_version()
+    |> assert_content_type()
+    |> assert_upload_offset()
+  end
+
+  defp assert_version(conn) do
+    assert get_req_header(conn, "tus-resumable") == ["1.0.0"]
+    conn
+  end
+
+  defp assert_upload_offset(conn) do
+    assert [v] = get_req_header(conn, "upload-offset")
+    assert String.to_integer(v) >= 0
+    conn
+  end
+
+  defp assert_content_type(conn) do
+    assert get_req_header(conn, "content-type") == [
+             "application/offset+octet-stream"
+           ]
+
+    conn
+  end
 
   defp random_file do
     path = "/tmp/#{random_file_name()}"

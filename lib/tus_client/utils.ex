@@ -10,7 +10,17 @@ defmodule TusClient.Utils do
     |> get_header_impl(String.downcase(header_name))
   end
 
-  def get_header_impl(headers, header_name) do
+  @doc false
+  def add_version_hdr(headers) do
+    headers ++ [{"tus-resumable", "1.0.0"}]
+  end
+
+  @doc false
+  def add_tus_content_type(headers) do
+    headers ++ [{"content-type", "application/offset+octet-stream"}]
+  end
+
+  defp get_header_impl(headers, header_name) do
     headers
     |> Enum.filter(fn
       {^header_name, _value} ->

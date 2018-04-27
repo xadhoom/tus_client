@@ -20,6 +20,7 @@ defmodule TusClient.PostTest do
     Bypass.expect_once(bypass, "POST", "/files", fn conn ->
       conn
       |> assert_upload_len()
+      |> assert_version()
       |> put_resp_header("location", endpoint_url(bypass.port) <> "/foofile")
       |> resp(201, "")
     end)
@@ -67,6 +68,11 @@ defmodule TusClient.PostTest do
 
     assert [len] = len_hdr
     assert String.to_integer(len) > 0
+    conn
+  end
+
+  defp assert_version(conn) do
+    assert get_req_header(conn, "tus-resumable") == ["1.0.0"]
     conn
   end
 

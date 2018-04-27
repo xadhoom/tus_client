@@ -55,9 +55,9 @@ defmodule TusClient.Options do
       |> Enum.map(fn x -> String.trim(x) end)
 
     creation = Enum.member?(supported, "creation")
-    expiration = Enum.member?(supported, "expiration")
+    # expiration = Enum.member?(supported, "expiration")
 
-    case creation and expiration do
+    case creation do
       true -> {:ok, supported}
       false -> {:error, :unfulfilled_extensions}
     end
@@ -65,8 +65,12 @@ defmodule TusClient.Options do
 
   defp check_supported_protocol(headers) do
     case Utils.get_header(headers, "tus-version") do
-      "1.0.0" -> :ok
-      _ -> {:error, :not_supported}
+      "1.0.0" ->
+        :ok
+
+      v ->
+        Logger.warn("Unsupported server version #{v}")
+        {:error, :not_supported}
     end
   end
 end
