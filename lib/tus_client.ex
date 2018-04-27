@@ -2,7 +2,7 @@ defmodule TusClient do
   @moduledoc """
   A minimal client for the https://tus.io protocol.
   """
-  alias TusClient.{Options, Head, Post, Patch}
+  alias TusClient.{Options, Post, Patch}
 
   require Logger
 
