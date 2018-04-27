@@ -1,6 +1,6 @@
 defmodule TusClientTest do
   @moduledoc false
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use Plug.Test
 
   alias TusClient
