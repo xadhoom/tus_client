@@ -189,11 +189,15 @@ defmodule TusClient.PostTest do
           |> List.to_tuple()
         end)
         |> Enum.all?(fn {_k, v} ->
-          case Base.decode64(v) do
-            {:ok, _} -> true
-            _ -> false
-          end
+          valid_base64?(v)
         end)
+    end
+  end
+
+  defp valid_base64?(value) do
+    case Base.decode64(value) do
+      {:ok, _} -> true
+      _ -> false
     end
   end
 end

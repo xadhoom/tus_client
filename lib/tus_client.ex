@@ -17,7 +17,8 @@ defmodule TusClient do
   end
 
   defp do_patch(location, path) do
-    Patch.request(location, 0, path)
+    location
+    |> Patch.request(0, path)
     |> do_patch(location, path, 1, 0)
   end
 
@@ -27,7 +28,8 @@ defmodule TusClient do
         {:ok, location}
 
       _ ->
-        Patch.request(location, new_offset, path)
+        location
+        |> Patch.request(new_offset, path)
         |> do_patch(location, path, 0, new_offset)
     end
   end
@@ -41,7 +43,8 @@ defmodule TusClient do
       _ ->
         Logger.warn("Patch error #{inspect(reason)}, retrying...")
 
-        Patch.request(location, offset, path)
+        location
+        |> Patch.request(offset, path)
         |> do_patch(location, path, retry_nr + 1, offset)
     end
   end
