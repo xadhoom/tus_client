@@ -6,7 +6,18 @@ defmodule TusClient do
 
   require Logger
 
-  @spec upload(binary(), binary(), list({binary, binary})) :: {:ok, binary}
+  @type upload_error ::
+          :file_error
+          | :generic
+          | :location
+          | :not_supported
+          | :too_large
+          | :too_many_errors
+          | :transport
+          | :unfulfilled_extensions
+
+  @spec upload(binary(), binary(), list({atom, binary()})) ::
+          {:ok, binary} | {:error, upload_error()}
   def upload(base_url, path, opts \\ []) do
     md = Keyword.get(opts, :metadata)
 
