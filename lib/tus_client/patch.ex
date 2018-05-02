@@ -47,10 +47,14 @@ defmodule TusClient.Patch do
   defp do_read({:error, _} = err), do: err
 
   defp do_read({:ok, io_device}) do
-    case :file.read(io_device, read_len()) do
-      :eof -> {:error, :eof}
-      res -> res
-    end
+    data =
+      case :file.read(io_device, read_len()) do
+        :eof -> {:error, :eof}
+        res -> res
+      end
+
+    File.close(io_device)
+    data
   end
 
   defp seek(path, offset) when is_binary(path) do
@@ -61,8 +65,12 @@ defmodule TusClient.Patch do
 
   defp seek({:ok, io_device}, offset) do
     case :file.position(io_device, offset) do
-      {:ok, _newpos} -> {:ok, io_device}
-      err -> err
+      {:ok, _newpos} ->
+        {:ok, io_device}
+
+      err ->
+        File.close(io_device)
+        err
     end
   end
 
