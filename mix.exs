@@ -1,4 +1,5 @@
 defmodule TusClient.MixProject do
+  @moduledoc false
   use Mix.Project
 
   def project do
@@ -30,7 +31,6 @@ defmodule TusClient.MixProject do
     [
       {:httpoison, "~> 1.1"},
       # development stuff,
-      # {:stream_data, "~> 0.4", only: :test},
       {:bypass, "~> 0.8", only: :test},
       {:excoveralls, "~> 0.8", only: :test, runtime: false},
       {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
