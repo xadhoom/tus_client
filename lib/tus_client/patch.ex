@@ -4,14 +4,14 @@ defmodule TusClient.Patch do
 
   require Logger
 
-  def request(url, offset, path) do
+  def request(url, offset, path, headers \\ []) do
     path
     |> seek(offset)
     |> do_read()
-    |> do_request(url, offset)
+    |> do_request(url, offset, headers)
   end
 
-  defp do_request({:ok, data}, url, offset) do
+  defp do_request({:ok, data}, url, offset, headers) do
     hdrs =
       [
         {"content-length", IO.iodata_length(data)},
@@ -19,13 +19,15 @@ defmodule TusClient.Patch do
       ]
       |> Utils.add_version_hdr()
       |> Utils.add_tus_content_type()
+      |> add_custom_headers(headers)
+      |> Enum.uniq()
 
     url
     |> HTTPoison.patch(data, hdrs)
     |> parse()
   end
 
-  defp do_request({:error, _} = err, _url, _offset), do: err
+  defp do_request({:error, _} = err, _url, _offset, _headers), do: err
 
   defp parse({:ok, %{status_code: 204, headers: headers}}) do
     case Utils.get_header(headers, "upload-offset") do
@@ -83,5 +85,9 @@ defmodule TusClient.Patch do
     :tus_client
     |> Application.get_env(TusClient)
     |> Keyword.get(:chunk_len)
+  end
+
+  defp add_custom_headers(hdrs1, hdrs2) do
+    hdrs1 ++ hdrs2
   end
 end

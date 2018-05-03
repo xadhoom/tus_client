@@ -42,6 +42,32 @@ defmodule TusClient.PatchTest do
              )
   end
 
+  test "request/3 204 with custom headers", %{bypass: bypass, tmp_file: path} do
+    data = "yaddayaddamohmoh"
+    filen = random_file_name()
+    :ok = File.write!(path, data)
+
+    Bypass.expect_once(bypass, "PATCH", "/files/#{filen}", fn conn ->
+      protocol_assertions(conn)
+
+      assert ["bar"] = get_req_header(conn, "foo")
+
+      {:ok, body, conn} = read_body(conn)
+      assert data == body
+
+      len = data |> String.length() |> to_string()
+
+      conn
+      |> put_resp_header("upload-offset", len)
+      |> resp(204, "")
+    end)
+
+    assert {:ok, String.length(data)} ==
+             Patch.request(endpoint_url(bypass.port, "#{filen}"), 0, path, [
+               {"foo", "bar"}
+             ])
+  end
+
   test "request/3 204 from offset", %{bypass: bypass, tmp_file: path} do
     data = "yaddayaddamohmoh"
     filen = random_file_name()
