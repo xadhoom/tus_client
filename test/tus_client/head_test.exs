@@ -20,7 +20,22 @@ defmodule TusClient.HeadTest do
     end)
 
     assert {:ok, %{upload_offset: 0, upload_length: 1234}} =
-             Head.request(url: file_url(bypass.port))
+             Head.request(file_url(bypass.port))
+  end
+
+  test "request/1 200, with custom headers", %{bypass: bypass} do
+    Bypass.expect_once(bypass, "HEAD", "/files/foobar", fn conn ->
+      assert ["bar"] = get_req_header(conn, "foo")
+
+      conn
+      |> put_resp_header("upload-offset", "0")
+      |> put_resp_header("upload-length", "1234")
+      |> put_resp_header("cache-control", "no-store")
+      |> resp(200, "")
+    end)
+
+    assert {:ok, %{upload_offset: 0, upload_length: 1234}} =
+             Head.request(file_url(bypass.port), [{"foo", "bar"}])
   end
 
   test "request/1 200, without len", %{bypass: bypass} do
@@ -32,7 +47,7 @@ defmodule TusClient.HeadTest do
     end)
 
     assert {:ok, %{upload_offset: 0, upload_length: nil}} =
-             Head.request(url: file_url(bypass.port))
+             Head.request(file_url(bypass.port))
   end
 
   test "request/1 offset is mandatory", %{bypass: bypass} do
@@ -43,7 +58,7 @@ defmodule TusClient.HeadTest do
       |> resp(200, "")
     end)
 
-    assert {:error, :preconditions} = Head.request(url: file_url(bypass.port))
+    assert {:error, :preconditions} = Head.request(file_url(bypass.port))
   end
 
   test "request/1 cache control is mandatory", %{bypass: bypass} do
@@ -54,7 +69,7 @@ defmodule TusClient.HeadTest do
       |> resp(200, "")
     end)
 
-    assert {:error, :preconditions} = Head.request(url: file_url(bypass.port))
+    assert {:error, :preconditions} = Head.request(file_url(bypass.port))
   end
 
   test "request/1 403", %{bypass: bypass} do
@@ -64,7 +79,7 @@ defmodule TusClient.HeadTest do
       |> resp(403, "")
     end)
 
-    assert {:error, :not_found} = Head.request(url: file_url(bypass.port))
+    assert {:error, :not_found} = Head.request(file_url(bypass.port))
   end
 
   test "request/1 404", %{bypass: bypass} do
@@ -74,7 +89,7 @@ defmodule TusClient.HeadTest do
       |> resp(404, "")
     end)
 
-    assert {:error, :not_found} = Head.request(url: file_url(bypass.port))
+    assert {:error, :not_found} = Head.request(file_url(bypass.port))
   end
 
   test "request/1 410", %{bypass: bypass} do
@@ -84,7 +99,7 @@ defmodule TusClient.HeadTest do
       |> resp(410, "")
     end)
 
-    assert {:error, :not_found} = Head.request(url: file_url(bypass.port))
+    assert {:error, :not_found} = Head.request(file_url(bypass.port))
   end
 
   defp file_url(port), do: endpoint_url(port) <> "/foobar"

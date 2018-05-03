@@ -4,9 +4,9 @@ defmodule TusClient.Head do
 
   require Logger
 
-  def request(url: url) do
+  def request(url, headers \\ []) do
     url
-    |> HTTPoison.head()
+    |> HTTPoison.head(headers)
     |> parse()
   end
 
