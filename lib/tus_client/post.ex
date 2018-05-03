@@ -4,16 +4,18 @@ defmodule TusClient.Post do
 
   require Logger
 
-  def request(url, path, opts \\ []) do
+  def request(url, path, headers \\ [], opts \\ []) do
     path
     |> get_filesize()
-    |> do_request(url, opts)
+    |> do_request(url, headers, opts)
   end
 
-  defp do_request({:ok, size}, url, opts) do
+  defp do_request({:ok, size}, url, headers, opts) do
     hdrs =
       [{"upload-length", to_string(size)}]
       |> Utils.add_version_hdr()
+      |> add_custom_headers(headers)
+      |> Enum.uniq()
       |> add_metadata(opts)
 
     url
@@ -21,7 +23,7 @@ defmodule TusClient.Post do
     |> parse()
   end
 
-  defp do_request(res, _url, _opts) do
+  defp do_request(res, _url, _headers, _opts) do
     res
   end
 
@@ -111,5 +113,9 @@ defmodule TusClient.Post do
       "#{k} #{value}"
     end)
     |> Enum.join(",")
+  end
+
+  defp add_custom_headers(hdrs1, hdrs2) do
+    hdrs1 ++ hdrs2
   end
 end
