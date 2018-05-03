@@ -20,33 +20,34 @@ defmodule TusClient do
           {:ok, binary} | {:error, upload_error()}
   def upload(base_url, path, opts \\ []) do
     md = Keyword.get(opts, :metadata)
+    hdrs = Keyword.get(opts, :headers, [])
 
-    with {:ok, _} <- Options.request(base_url),
+    with {:ok, _} <- Options.request(base_url, hdrs),
          {:ok, %{location: loc}} <-
-           Post.request(base_url, path, [], metadata: md) do
-      do_patch(loc, path)
+           Post.request(base_url, path, hdrs, metadata: md) do
+      do_patch(loc, path, hdrs)
     end
   end
 
-  defp do_patch(location, path) do
+  defp do_patch(location, path, headers) do
     location
-    |> Patch.request(0, path)
-    |> do_patch(location, path, 1, 0)
+    |> Patch.request(0, path, headers)
+    |> do_patch(location, path, headers, 1, 0)
   end
 
-  defp do_patch({:ok, new_offset}, location, path, _retry_nr, _offset) do
+  defp do_patch({:ok, new_offset}, location, path, headers, _retry_nr, _offset) do
     case file_size(path) do
       ^new_offset ->
         {:ok, location}
 
       _ ->
         location
-        |> Patch.request(new_offset, path)
-        |> do_patch(location, path, 0, new_offset)
+        |> Patch.request(new_offset, path, headers)
+        |> do_patch(location, path, headers, 0, new_offset)
     end
   end
 
-  defp do_patch({:error, reason}, location, path, retry_nr, offset) do
+  defp do_patch({:error, reason}, location, path, headers, retry_nr, offset) do
     case max_retries() do
       ^retry_nr ->
         Logger.error("Max retries reached, bailing out...")
@@ -56,8 +57,8 @@ defmodule TusClient do
         Logger.warn("Patch error #{inspect(reason)}, retrying...")
 
         location
-        |> Patch.request(offset, path)
-        |> do_patch(location, path, retry_nr + 1, offset)
+        |> Patch.request(offset, path, headers)
+        |> do_patch(location, path, headers, retry_nr + 1, offset)
     end
   end
 
