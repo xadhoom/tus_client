@@ -16,7 +16,7 @@ defmodule TusClient do
           | :transport
           | :unfulfilled_extensions
 
-  @spec upload(binary(), binary(), list({atom, binary()})) ::
+  @spec upload(binary(), binary(), list({:metadata | :headers, binary()})) ::
           {:ok, binary} | {:error, upload_error()}
   def upload(base_url, path, opts \\ []) do
     md = Keyword.get(opts, :metadata)
