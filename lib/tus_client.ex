@@ -21,7 +21,7 @@ defmodule TusClient do
   def upload(base_url, path, opts \\ []) do
     md = Keyword.get(opts, :metadata)
 
-    with {:ok, _} <- Options.request(url: base_url),
+    with {:ok, _} <- Options.request(base_url),
          {:ok, %{location: loc}} <- Post.request(base_url, path, metadata: md) do
       do_patch(loc, path)
     end
