@@ -4,10 +4,10 @@ defmodule TusClient.Patch do
 
   require Logger
 
-  def request(url, offset, path, headers \\ []) do
+  def request(url, offset, path, headers \\ [], opts \\ []) do
     path
     |> seek(offset)
-    |> do_read()
+    |> do_read(opts)
     |> do_request(url, offset, headers)
   end
 
@@ -46,11 +46,11 @@ defmodule TusClient.Patch do
     {:error, :transport}
   end
 
-  defp do_read({:error, _} = err), do: err
+  defp do_read({:error, _} = err, _opts), do: err
 
-  defp do_read({:ok, io_device}) do
+  defp do_read({:ok, io_device}, opts) do
     data =
-      case :file.read(io_device, read_len()) do
+      case :file.read(io_device, get_read_len(opts)) do
         :eof -> {:error, :eof}
         res -> res
       end
@@ -81,9 +81,8 @@ defmodule TusClient.Patch do
     {:error, :file_error}
   end
 
-  defp read_len do
-    :tus_client
-    |> Application.get_env(TusClient, [])
+  defp get_read_len(opts) do
+    opts
     |> Keyword.get(:chunk_len, 4_194_304)
   end
 

@@ -9,12 +9,10 @@ defmodule TusClientTest do
     bypass = Bypass.open()
     {:ok, path} = random_file()
 
-    cur_conf = Application.get_env(:tus_client, TusClient)
-    Application.put_env(:tus_client, TusClient, chunk_len: 4)
+    # Application.put_env(:tus_client, TusClient, chunk_len: 4)
 
     on_exit(fn ->
       File.rm!(path)
-      Application.put_env(:tus_client, TusClient, cur_conf)
     end)
 
     {:ok, bypass: bypass, tmp_file: path}
@@ -54,7 +52,8 @@ defmodule TusClientTest do
 
     File.rm!(store_path)
 
-    assert {:ok, _location} = TusClient.upload(endpoint_url(bypass.port), path)
+    assert {:ok, _location} =
+             TusClient.upload(endpoint_url(bypass.port), path, chunk_len: 4)
   end
 
   test "upload/3 with custom headers", %{bypass: bypass, tmp_file: path} do
