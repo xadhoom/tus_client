@@ -83,8 +83,8 @@ defmodule TusClient.Patch do
 
   defp read_len do
     :tus_client
-    |> Application.get_env(TusClient)
-    |> Keyword.get(:chunk_len)
+    |> Application.get_env(TusClient, [])
+    |> Keyword.get(:chunk_len, 4_194_304)
   end
 
   defp add_custom_headers(hdrs1, hdrs2) do
