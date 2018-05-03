@@ -69,7 +69,7 @@ defmodule TusClient do
 
   defp max_retries do
     :tus_client
-    |> Application.get_env(TusClient)
+    |> Application.get_env(TusClient, [])
     |> Keyword.get(:max_retries, 3)
   end
 end
