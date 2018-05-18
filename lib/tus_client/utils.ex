@@ -20,6 +20,12 @@ defmodule TusClient.Utils do
     headers ++ [{"content-type", "application/offset+octet-stream"}]
   end
 
+  @doc false
+  def httpoison_opts(http_opts, tus_opts) do
+    ssl_opts = tus_opts |> Keyword.get(:ssl, [])
+    http_opts ++ ssl_opts
+  end
+
   defp get_header_impl(headers, header_name) do
     headers
     |> Enum.filter(fn

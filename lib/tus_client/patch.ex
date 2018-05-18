@@ -8,10 +8,10 @@ defmodule TusClient.Patch do
     path
     |> seek(offset)
     |> do_read(opts)
-    |> do_request(url, offset, headers)
+    |> do_request(url, offset, headers, opts)
   end
 
-  defp do_request({:ok, data}, url, offset, headers) do
+  defp do_request({:ok, data}, url, offset, headers, opts) do
     hdrs =
       [
         {"content-length", IO.iodata_length(data)},
@@ -23,11 +23,11 @@ defmodule TusClient.Patch do
       |> Enum.uniq()
 
     url
-    |> HTTPoison.patch(data, hdrs)
+    |> HTTPoison.patch(data, hdrs, Utils.httpoison_opts([], opts))
     |> parse()
   end
 
-  defp do_request({:error, _} = err, _url, _offset, _headers), do: err
+  defp do_request({:error, _} = err, _url, _offset, _headers, _opts), do: err
 
   defp parse({:ok, %{status_code: 204, headers: headers}}) do
     case Utils.get_header(headers, "upload-offset") do

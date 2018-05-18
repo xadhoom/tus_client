@@ -4,9 +4,9 @@ defmodule TusClient.Options do
 
   require Logger
 
-  def request(url, headers \\ []) do
+  def request(url, headers \\ [], opts \\ []) do
     url
-    |> HTTPoison.options(headers)
+    |> HTTPoison.options(headers, Utils.httpoison_opts([], opts))
     |> parse()
   end
 

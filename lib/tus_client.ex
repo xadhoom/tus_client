@@ -20,8 +20,11 @@ defmodule TusClient do
           binary(),
           binary(),
           list(
-            {:metadata | :headers | :max_retries | :chunk_len,
-             binary() | integer()}
+            {:metadata, binary()}
+            | {:max_retries, integer()}
+            | {:chunk_len, integer()}
+            | {:headers, list()}
+            | {:ssl, list()}
           )
         ) :: {:ok, binary} | {:error, upload_error()}
   def upload(base_url, path, opts \\ []) do

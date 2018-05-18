@@ -19,7 +19,7 @@ defmodule TusClient.Post do
       |> add_metadata(opts)
 
     url
-    |> HTTPoison.post("", hdrs)
+    |> HTTPoison.post("", hdrs, Utils.httpoison_opts([], opts))
     |> parse()
   end
 
