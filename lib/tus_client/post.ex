@@ -72,15 +72,16 @@ defmodule TusClient.Post do
   defp add_metadata(headers, opts) do
     case Keyword.get(opts, :metadata) do
       md when is_map(md) ->
-        md
-        |> cleanup_metadata()
+        new_md = cleanup_metadata(md)
+
+        new_md
         |> Enum.empty?()
         |> case do
           true ->
             headers
 
           false ->
-            headers ++ [{"upload-metadata", encode_metadata(md)}]
+            headers ++ [{"upload-metadata", encode_metadata(new_md)}]
         end
 
       _ ->
@@ -94,7 +95,7 @@ defmodule TusClient.Post do
       {"#{k}", v}
     end)
     |> Enum.filter(fn {k, _v} ->
-      case k =~ ~r/^[a-z|A-Z|0-9]+$/ do
+      case k =~ ~r/^[a-z|A-Z|0-9|_|-|\.]+$/ do
         true ->
           true
 
