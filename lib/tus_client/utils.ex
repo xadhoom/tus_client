@@ -23,7 +23,8 @@ defmodule TusClient.Utils do
   @doc false
   def httpoison_opts(http_opts, tus_opts) do
     ssl_opts = tus_opts |> Keyword.get(:ssl, [])
-    http_opts ++ ssl_opts
+    hackney_opts = tus_opts |> Keyword.get(:hackney, [])
+    http_opts ++ ssl_opts ++ hackney_opts
   end
 
   defp get_header_impl(headers, header_name) do
