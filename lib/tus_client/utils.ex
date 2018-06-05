@@ -23,8 +23,9 @@ defmodule TusClient.Utils do
   @doc false
   def httpoison_opts(http_opts, tus_opts) do
     ssl_opts = tus_opts |> Keyword.get(:ssl, [])
-    hackney_opts = tus_opts |> Keyword.get(:hackney, [])
-    http_opts ++ ssl_opts ++ hackney_opts
+    follow_redirect = tus_opts |> Keyword.get(:follow_redirect, false)
+
+    http_opts ++ [ssl: ssl_opts] ++ [follow_redirect: follow_redirect]
   end
 
   defp get_header_impl(headers, header_name) do

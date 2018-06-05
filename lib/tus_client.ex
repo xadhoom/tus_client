@@ -25,7 +25,7 @@ defmodule TusClient do
             | {:chunk_len, integer()}
             | {:headers, list()}
             | {:ssl, list()}
-            | {:hackney, list()}
+            | {:follow_redirect, boolean()}
           )
         ) :: {:ok, binary} | {:error, upload_error()}
   def upload(base_url, path, opts \\ []) do
