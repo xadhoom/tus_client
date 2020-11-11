@@ -5,8 +5,8 @@ defmodule TusClient.MixProject do
   def project do
     [
       app: :tus_client,
-      version: "0.1.0",
-      elixir: "~> 1.6",
+      version: "0.1.1",
+      elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
@@ -29,12 +29,12 @@ defmodule TusClient.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:httpoison, "~> 1.1"},
+      {:httpoison, "~> 1.7"},
       # development stuff,
-      {:bypass, "~> 0.8", only: :test},
-      {:excoveralls, "~> 0.8", only: :test, runtime: false},
-      {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
-      {:credo, "~> 0.8", only: [:dev, :test], runtime: false}
+      {:bypass, "~> 2.1.0-rc.0", only: :test},
+      {:excoveralls, "~> 0.13", only: :test, runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false}
     ]
   end
 end
