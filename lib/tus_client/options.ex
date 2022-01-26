@@ -7,7 +7,7 @@ defmodule TusClient.Options do
   def request(url, headers \\ [], opts \\ []) do
     url
     |> HTTPoison.options(headers, Utils.httpoison_opts([], opts))
-    |> parse()
+    |> Utils.maybe_follow_redirect(&parse/1, &request(&1, headers, opts))
   end
 
   defp parse({:ok, %{status_code: status} = resp}) when status in [200, 204] do

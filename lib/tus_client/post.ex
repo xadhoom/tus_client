@@ -20,7 +20,10 @@ defmodule TusClient.Post do
 
     url
     |> HTTPoison.post("", hdrs, Utils.httpoison_opts([], opts))
-    |> parse()
+    |> Utils.maybe_follow_redirect(
+      &parse/1,
+      &do_request({:ok, size}, &1, headers, opts)
+    )
   end
 
   defp do_request(res, _url, _headers, _opts) do

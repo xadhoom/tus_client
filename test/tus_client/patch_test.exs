@@ -146,6 +146,43 @@ defmodule TusClient.PatchTest do
              )
   end
 
+  test "request/3 301", %{bypass: bypass, tmp_file: path} do
+    data = "yaddayaddamohmoh"
+    filen = random_file_name()
+    :ok = File.write!(path, data)
+
+    Bypass.expect_once(bypass, "PATCH", "/files/#{filen}", fn conn ->
+      conn
+      |> put_resp_header(
+        "location",
+        "http://localhost:#{bypass.port}/actual_files/#{filen}"
+      )
+      |> resp(301, "")
+    end)
+
+    Bypass.expect_once(bypass, "PATCH", "/actual_files/#{filen}", fn conn ->
+      protocol_assertions(conn)
+
+      {:ok, body, conn} = read_body(conn)
+      assert data == body
+
+      len = data |> String.length() |> to_string()
+
+      conn
+      |> put_resp_header("upload-offset", len)
+      |> resp(204, "")
+    end)
+
+    assert {:ok, String.length(data)} ==
+             Patch.request(
+               endpoint_url(bypass.port, "#{filen}"),
+               0,
+               path,
+               [],
+               follow_redirect: true
+             )
+  end
+
   defp endpoint_url(port, fname), do: "http://localhost:#{port}/files/#{fname}"
 
   defp protocol_assertions(conn) do
