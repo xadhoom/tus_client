@@ -29,11 +29,9 @@ defmodule TusClient do
           )
         ) :: {:ok, binary} | {:error, upload_error()}
   def upload(base_url, path, opts \\ []) do
-    md = Keyword.get(opts, :metadata)
-
-    with {:ok, _} <- Options.request(base_url, get_headers(opts)),
+    with {:ok, _} <- Options.request(base_url, get_headers(opts), opts),
          {:ok, %{location: loc}} <-
-           Post.request(base_url, path, get_headers(opts), metadata: md) do
+           Post.request(base_url, path, get_headers(opts), opts) do
       do_patch(loc, path, opts)
     end
   end
