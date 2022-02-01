@@ -44,6 +44,27 @@ defmodule TusClient.PostTest do
              Post.request(endpoint_url(bypass.port), path, [{"foo", "bar"}])
   end
 
+  test "request/1 301", %{bypass: bypass, tmp_file: path} do
+    Bypass.expect_once(bypass, "POST", "/files", fn conn ->
+      conn
+      |> put_resp_header("location", "http://localhost:#{bypass.port}/here")
+      |> resp(301, "<h1>go follow the location header</h1>")
+    end)
+
+    Bypass.expect_once(bypass, "POST", "/here", fn conn ->
+      conn
+      |> assert_upload_len()
+      |> assert_version()
+      |> put_resp_header("location", endpoint_url(bypass.port) <> "/foofile")
+      |> resp(201, "")
+    end)
+
+    assert {:ok, %{location: endpoint_url(bypass.port) <> "/foofile"}} ==
+             Post.request(endpoint_url(bypass.port), path, [],
+               follow_redirect: true
+             )
+  end
+
   test "request/1 with metadata", %{bypass: bypass, tmp_file: path} do
     Bypass.expect_once(bypass, "POST", "/files", fn conn ->
       conn

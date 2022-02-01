@@ -29,7 +29,7 @@ defmodule TusClient.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:httpoison, "~> 1.7"},
+      {:httpoison, "~> 1.8"},
       # development stuff,
       {:bypass, "~> 2.1.0-rc.0", only: :test},
       {:excoveralls, "~> 0.13", only: :test, runtime: false},

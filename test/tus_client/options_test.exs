@@ -83,5 +83,26 @@ defmodule TusClient.OptionsTest do
              Options.request(endpoint_url(bypass.port))
   end
 
+  test "request/1 307", %{bypass: bypass} do
+    Bypass.expect_once(bypass, "OPTIONS", "/files", fn conn ->
+      conn
+      |> put_resp_header("location", "http://localhost:#{bypass.port}/files2")
+      |> resp(307, "")
+    end)
+
+    Bypass.expect_once(bypass, "OPTIONS", "/files2", fn conn ->
+      conn
+      |> put_resp_header("tus-version", "1.0.0")
+      |> put_resp_header("tus-max-size", "1234")
+      |> put_resp_header("tus-extension", "creation,expiration")
+      |> resp(200, "")
+    end)
+
+    assert {:ok, %{max_size: 1234, extensions: ["creation", "expiration"]}} =
+             Options.request(endpoint_url(bypass.port), [],
+               follow_redirect: true
+             )
+  end
+
   defp endpoint_url(port), do: "http://localhost:#{port}/files"
 end

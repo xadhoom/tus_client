@@ -24,22 +24,10 @@ defmodule TusClient.Patch do
 
     url
     |> HTTPoison.patch(data, hdrs, Utils.httpoison_opts([], opts))
-    |> case do
-      {:ok,
-       %HTTPoison.AsyncResponse{
-         id: {:maybe_redirect, 301, red_headers, _client}
-       }} ->
-        case extract_loc(red_headers) do
-          {:ok, new_loc} ->
-            do_request({:ok, data}, new_loc, offset, headers, opts)
-
-          _ ->
-            {:error, :protocol}
-        end
-
-      response ->
-        parse(response)
-    end
+    |> Utils.maybe_follow_redirect(
+      &parse/1,
+      &do_request({:ok, data}, &1, offset, headers, opts)
+    )
   end
 
   defp do_request({:error, _} = err, _url, _offset, _headers, _opts), do: err
@@ -103,12 +91,5 @@ defmodule TusClient.Patch do
 
   defp add_custom_headers(hdrs1, hdrs2) do
     hdrs1 ++ hdrs2
-  end
-
-  defp extract_loc(headers) do
-    case Utils.get_header(headers, "location") do
-      nil -> :error
-      location -> {:ok, location}
-    end
   end
 end

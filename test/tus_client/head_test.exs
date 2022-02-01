@@ -102,6 +102,28 @@ defmodule TusClient.HeadTest do
     assert {:error, :not_found} = Head.request(file_url(bypass.port))
   end
 
+  test "request/1 302", %{bypass: bypass} do
+    Bypass.expect_once(bypass, "HEAD", "/files/foobar", fn conn ->
+      conn
+      |> put_resp_header(
+        "location",
+        "http://localhost:#{bypass.port}/somewhere/foobar"
+      )
+      |> resp(302, "")
+    end)
+
+    Bypass.expect_once(bypass, "HEAD", "/somewhere/foobar", fn conn ->
+      conn
+      |> put_resp_header("upload-offset", "0")
+      |> put_resp_header("upload-length", "1234")
+      |> put_resp_header("cache-control", "no-store")
+      |> resp(200, "")
+    end)
+
+    assert {:ok, %{upload_offset: 0, upload_length: 1234}} =
+             Head.request(file_url(bypass.port), [], follow_redirect: true)
+  end
+
   defp file_url(port), do: endpoint_url(port) <> "/foobar"
   defp endpoint_url(port), do: "http://localhost:#{port}/files"
 end
